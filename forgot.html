@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forgot Password</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f5f5f5;
+    }
+    .container {
+      text-align: center;
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 300px;
+    }
+    h2 {
+      color: #333;
+    }
+    label {
+      font-weight: bold;
+      color: #555;
+      display: block;
+      margin-top: 10px;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    .success {
+      color: #4CAF50;
+    }
+    .error {
+      color: #FF0000;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Forgot Password</h2>
+  <form id="forgotPasswordForm">
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username" required>
+    <button type="button" onclick="checkUser()">Submit</button>
+    <div class="message" id="message"></div>
+  </form>
+</div>
+
+<script>
+  function checkUser() {
+    const username = document.getElementById("username").value;
+    const messageDiv = document.getElementById("message");
+
+    fetch('users.json')
+      .then(response => response.json())
+      .then(users => {
+        if (users[username]) {
+          messageDiv.innerHTML = `
+            <label for="newPassword">Enter New Password</label>
+            <input type="password" id="newPassword" required>
+            <button type="button" onclick="updatePassword('${username}')">Update Password</button>
+          `;
+          messageDiv.className = "message success";
+        } else {
+          messageDiv.textContent = "Error: User does not exist!";
+          messageDiv.className = "message error";
+        }
+      })
+      .catch(error => {
+        messageDiv.textContent = "Error loading user data!";
+        messageDiv.className = "message error";
+      });
+  }
+
+  function updatePassword(username) {
+    const newPassword = document.getElementById("newPassword").value;
+    const messageDiv = document.getElementById("message");
+
+    if (newPassword) {
+      fetch('update_password.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, newPassword })
+      })
+      .then(response => response.json())
+      .then(data => {
+        messageDiv.textContent = data.message;
+        messageDiv.className = data.success ? "message success" : "message error";
+      })
+      .catch(error => {
+        messageDiv.textContent = "Error updating password.";
+        messageDiv.className = "message error";
+      });
+    } else {
+      messageDiv.textContent = "Please enter a new password.";
+      messageDiv.className = "message error";
+    }
+  }
+</script>
+
+</body>
+</html>
